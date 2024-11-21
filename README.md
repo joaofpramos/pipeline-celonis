@@ -6,8 +6,7 @@ This project implements an ETL pipeline using Python, DuckDB, and Parquet files.
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/your-username/your-repo-name.git
-   cd your-repo-name
+   git clone git@github.com:joaofpramos/pipeline-celonis.git
    ```
 
 2. **Build the Docker Image**:
