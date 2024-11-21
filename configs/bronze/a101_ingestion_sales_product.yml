@@ -1,0 +1,26 @@
+expected_formats:
+  sales: "sales_data_*.json"
+  product: "product_data_*.json"
+
+directories:
+  input: "data/input"
+  bronze: "data/bronze"
+  archive: "data/input/archive"
+
+data_format:
+  input:
+    sales: "json"
+    product: "json"
+  output:
+    bronze: "json"
+
+validation:
+  required_columns:
+    sales: ["sale_id", "product_id", "quantity", "price", "sale_date"]
+    product: ["product_id", "product_name", "price", "category"]
+  check_negative_values:
+    sales: ["quantity", "price"]
+    product: ["price"]
+  unique_id_columns:
+    sales: "sale_id"
+    product: "product_id"

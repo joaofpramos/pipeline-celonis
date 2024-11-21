@@ -1,0 +1,23 @@
+directories:
+  silver: "data/silver"
+
+input:
+  file_format: "parquet"
+
+database:
+  path: "data/gold/sales_product.duckdb"
+
+tables:
+  staging: "staging_sales_product"
+
+  # Example of partitioned table names
+  # Tables will be created with names like:
+  # sales_2023_01, sales_2023_02, ..., sales_2024_12
+  partitioned_table_example: "sales_<year>_<month>"
+
+views:
+  sales_product_view:
+    name: "mv_sales_2024"
+    query: |
+      CREATE OR REPLACE MATERIALIZED VIEW mv_sales_2024 AS
+      SELECT * FROM sales_partitioned WHERE sale_year = 2024

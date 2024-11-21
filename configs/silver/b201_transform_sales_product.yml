@@ -1,0 +1,20 @@
+directories:
+  bronze: "data/bronze"
+  silver: "data/silver"
+  archive: "data/bronze/archive"
+
+file_patterns:
+  sales: "sales_data_bronze_*.json"
+  product: "product_data_bronze_*.json"
+
+expected_columns:
+  sales: ["sale_id", "product_id", "sale_date", "quantity", "price", "ingestion_timestamp"]
+  product: ["product_id", "product_name", "category", "price", "ingestion_timestamp"]
+
+validation:
+  drop_missing: ["product_id", "sale_date"]  # Columns to check for missing values
+  check_negative: ["quantity", "price"]     # Columns to check for negative values
+
+output:
+  file_format: "parquet"
+  file_name_template: "transformed_sales_product_{timestamp}.parquet"
