@@ -18,8 +18,12 @@ This project implements an ETL pipeline using Python, DuckDB, and Parquet files.
    ```bash
    docker run -d etl-pipeline
    ```
-
-   This will start the ETL pipeline, which runs every few minutes as scheduled.
+    This will start the ETL pipeline, which runs every few minutes as scheduled.
+4. **Run the Docker Container in Bind mode**:
+  '''bash
+   docker run -d -v C:/path/to/your/project:/app etl-pipeline
+   '''
+   This will start the ETL pipeline, which runs every few minutes as scheduled, but will bind the data generated to the host directory with the container directory.
 
 ## Assumptions Made
 
