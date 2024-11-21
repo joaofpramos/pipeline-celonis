@@ -47,48 +47,55 @@ This project implements an ETL pipeline using Python, DuckDB, and Parquet files.
 - **Dockerization**: Setting up the Docker environment to ensure all dependencies are correctly installed and paths are correctly set.
 - **Duplication of `ingestion_timestamp`**: When joining sales and product data, both datasets contained an `ingestion_timestamp` column. This required careful handling to avoid duplication and ensure the correct timestamp was retained.
 - **Total Price Calculation**: The sales data already included a `price` column, which needed to be renamed to `sales_price` to avoid conflicts. The `total_sales` was then calculated using the `quantity` and `product_price` from the product data.
-- **Quality Checks**: Implementing quality checks to ensure data integrity, such as checking for missing or negative values, and validating the uniqueness of IDs. These checks are crucial for maintaining data quality throughout the ETL process, and was decided to drop the rows that didn't the criteria.
+- **Quality Checks**: Implementing quality checks to ensure data integrity, such as checking for missing or negative values, and validating the uniqueness of IDs. These checks are crucial for maintaining data quality throughout the ETL process, and was decided to drop the rows that didn't meet the criteria.
 
 ## DuckDB Database Schema
 
 ### Tables
 
-1. **fact_sales**
-   - **id**: Unique identifier for each sale (auto-generated).
-   - **sale_id**: Identifier for the sale.
-   - **product_id**: Identifier for the product.
-   - **sale_date**: Date of the sale.
-   - **quantity**: Quantity sold.
-   - **sales_price**: Price at which the product was sold.
-   - **total_sales**: Total sales amount (calculated as `quantity * sales_price`).
+1. **Staging Table**
+   - **Name**: `staging_sales_product`
+   - **Format**:
+     - `id` (INTEGER): Unique identifier for each record, ensuring continuity even with existing data.
+     - `sale_id` (INTEGER): Unique identifier for each sale.
+     - `product_id` (VARCHAR): Identifier for the product.
+     - `sale_date` (DATE): Date of the sale.
+     - `quantity` (INTEGER): Quantity sold.
+     - `sales_price` (FLOAT): Price at which the product was sold.
+     - `total_sales` (FLOAT): Calculated total sales amount (quantity * sales_price).
+     - `ingestion_timestamp` (TIMESTAMP): Timestamp when the data was ingested.
 
-2. **dim_product**
-   - **id**: Unique identifier for each product (auto-generated).
-   - **product_id**: Identifier for the product.
-   - **product_name**: Name of the product.
-   - **category**: Category of the product.
-   - **product_price**: Price of the product.
+2. **Monthly Partitioned Tables**
+   - **Naming Convention**: `sales_<year>_<month>`
+   - **Format**: Same as the staging table, including the `id` column.
 
-### View
+### Views
 
-- **vw_sales_product**
-  - Combines data from `fact_sales` and `dim_product` to provide a comprehensive view of sales and product details.
-## Partitioning in DuckDB
+1. **Yearly Sales View**
+   - **Name**: `vw_sales_2024`
+   - **Purpose**: Consolidates all sales data from the year 2024 into a single view, enabling easy access and analysis of the entire year's data.
 
-DuckDB supports partitioning through the use of indices, which can significantly improve query performance by allowing the database to quickly locate and access the relevant data. In this project, we simulate partitioning by creating an index on the `sale_date` column in the `fact_sales` table. This allows for efficient querying of sales data within specific date ranges.
+### How to Query the DuckDB Database
 
-### How It Works
+To query the DuckDB database, you can use the `utils/query_duckdb.py` script. Here are some example queries:
 
-- **Index Creation**: An index is created on the `sale_date` column in the `fact_sales` table using the following SQL command:
-  ```sql
-  CREATE INDEX IF NOT EXISTS idx_sale_date ON fact_sales(sale_date);
-  ```
+1. **Show Schema**:
+   ```sql
+   PRAGMA show_tables;
+   ```
 
-- **Query Optimization**: When a query is executed that filters data based on the `sale_date`, DuckDB uses the index to quickly locate the relevant rows, reducing the amount of data that needs to be scanned.
+2. **List All Tables**:
+   ```sql
+   SELECT table_name FROM information_schema.tables WHERE table_schema='main';
+   ```
 
-- **Example Query**: To retrieve sales data within a specific date range, you can use a query like:
-  ```sql
-  SELECT * FROM fact_sales WHERE sale_date BETWEEN '2023-01-01' AND '2023-12-31';
-  ```
+3. **Query Data from a Specific Table**:
+   ```sql
+   SELECT * FROM sales_2024_01 LIMIT 5;
+   ```
 
-  This query will benefit from the index on `sale_date`, resulting in faster execution times.
+4. **Query Data from the Yearly Sales View**:
+   ```sql
+   SELECT * FROM vw_sales_2024 LIMIT 5;
+   ```
+
